@@ -7,27 +7,6 @@ import tempfile
 
 from updb import UPdb
 
-class UPdb_mixin(object):
-    _updb_debug_func = {}
-
-    def debug_func(self, f, once=True, force=True):
-        if f not in self._updb_debug_func:
-            func = getattr(self, f)
-            self._updb_debug_func[f] = func
-            pdb_sock_path = "%s/pdb_sock"%tempfile.mkdtemp(prefix='updb_')
-            def _(*o, **k):
-                if once:
-                    self.undebug_func(f)
-                with UPdb(pdb_sock_path, level=1, force=force):
-                    return func(*o, **k)
-            setattr(self, f, _)
-            return pdb_sock_path
-
-    def undebug_func(self, f):
-        if f in self._updb_debug_func:
-            setattr(self, f, self._updb_debug_func.pop(f))
-
-
 def main(options):
     if options.funcname:
         # get a client connection

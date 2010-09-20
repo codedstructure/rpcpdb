@@ -3,7 +3,7 @@
 # be compatible with Python 2.5
 from __future__ import with_statement
 
-import updb, rpyc
+import termsock, rpyc
 
 def main(options):
     if options.funcname:
@@ -14,7 +14,7 @@ def main(options):
         sock_name = options.sockname
     print sock_name
 
-    dbg = updb.TermSock(sock_name)
+    dbg = termsock.TermSock(sock_name)
     dbg.mainloop()
 
 if __name__ == '__main__':

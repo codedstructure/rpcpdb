@@ -3,7 +3,7 @@
 # be compatible with Python 2.5
 from __future__ import with_statement
 
-import pdb, socket, sys, os
+import pdb, socket, sys, os, tempfile
 
 class UPdb(pdb.Pdb):
     def __init__(self, sock_path, level=0, force=False):
@@ -42,3 +42,23 @@ class UPdb(pdb.Pdb):
         self._conn.shutdown(socket.SHUT_RDWR)
         os.remove(self._sock_path)
         os.rmdir(os.path.dirname(self._sock_path))
+
+class UPdb_mixin(object):
+    _updb_debug_func = {}
+
+    def debug_func(self, f, once=True, force=True):
+        if f not in self._updb_debug_func:
+            func = getattr(self, f)
+            self._updb_debug_func[f] = func
+            pdb_sock_path = "%s/pdb_sock"%tempfile.mkdtemp(prefix='updb_')
+            def _(*o, **k):
+                if once:
+                    self.undebug_func(f)
+                with UPdb(pdb_sock_path, level=1, force=force):
+                    return func(*o, **k)
+            setattr(self, f, _)
+            return pdb_sock_path
+
+    def undebug_func(self, f):
+        if f in self._updb_debug_func:
+            setattr(self, f, self._updb_debug_func.pop(f))

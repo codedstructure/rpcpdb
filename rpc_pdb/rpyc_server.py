@@ -7,8 +7,14 @@ import rpyc
 # published as XML-RPC methods (in this case, just 'div').
 import updb
 
+class RpycUPdb_mixin(updb.UPdb_mixin):
+    def exposed_debug_func(self, f, *o, **k):
+        return self.debug_func(f, *o, **k)
+    def exposed_undebug_func(self, f):
+        return self.undebug_func(f)
+
 import sys
-class MyFuncs(updb.RpycUPdb_mixin, rpyc.Service):
+class MyFuncs(RpycUPdb_mixin, rpyc.Service):
     def on_connect(self):
         # code that runs when a connection is created (to init the serivce, if needed)
         pass
