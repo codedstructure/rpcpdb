@@ -50,18 +50,27 @@ class UPdb_mixin(object):
     object. It allows an RPC client to register a
     RPC method as being debuggable.
 
-    On triggering,
+    On triggering, subsequent calls to that method
+    will trigger a pdb breakpoint (currently with
+    interaction over a unix socket)
     """
+    # this is a map from function name to
+    # (function, unix_socket_path) pairs.
     _updb_debug_func = {}
 
     def debug_func(self, f, once=True, force=True):
         """
+        @param f: function name
+        @param once: one-shot debug - undebug after first hit
+        @param force: override any existing unix socket
         @return: path to debug socket
         """
-        if f not in self._updb_debug_func:
+        if f in self._updb_debug_func:
+            return self._updb_debug_func[f][1]
+        else:
             func = getattr(self, f)
-            self._updb_debug_func[f] = func
             pdb_sock_path = "%s/pdb_sock"%tempfile.mkdtemp(prefix='updb_')
+            self._updb_debug_func[f] = (func, pdb_sock_path)
             def _(*o, **k):
                 if once:
                     self.undebug_func(f)
@@ -75,4 +84,4 @@ class UPdb_mixin(object):
         don't debug this function anymore.
         """
         if f in self._updb_debug_func:
-            setattr(self, f, self._updb_debug_func.pop(f))
+            setattr(self, f, self._updb_debug_func.pop(f)[0])
