@@ -40,7 +40,7 @@ Plans
 -----
 
  * Add trigger criteria which check incoming arguments so the
-user can ensure the right client triggers the breakpoint
+   user can ensure the right client triggers the breakpoint
  * Update examples, tidy up, document.
  * Support other interfaces than termsock / UNIX socket.
 
