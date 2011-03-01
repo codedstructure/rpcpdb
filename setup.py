@@ -3,15 +3,16 @@
 from distutils.core import setup
 
 setup(
-    name="rpc_pdb",
+    name="rpcpdb",
     version="0.1",
     description="Debug support for RPC servers",
+    long_description=open('README.txt').read(),
     author="Ben Bass",
     author_email="benbass@codedstructure.net",
-    url="http://bitbucket.org/codedstructure/rpc_pdb",
-    packages=["rpc_pdb"],
+    url="http://bitbucket.org/codedstructure/rpcpdb",
+    packages=["rpcpdb"],
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 3 - Alpha",
         "Environment :: Console",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
