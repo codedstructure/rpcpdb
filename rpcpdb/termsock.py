@@ -9,9 +9,9 @@ class TermSock(object):
     # as in the writable state.
     PIPE_BUF = 512
 
-    STDIN_FD = sys.stdin.fileno()   # normally 0
-    STDOUT_FD = sys.stdout.fileno() # normally 1
-    STDERR_FD = sys.stderr.fileno() # normally 2
+    STDIN_FD = sys.stdin.fileno()    # normally 0
+    STDOUT_FD = sys.stdout.fileno()  # normally 1
+    STDERR_FD = sys.stderr.fileno()  # normally 2
 
     def __init__(self, sock_name):
         self.sock_name = sock_name
@@ -21,15 +21,17 @@ class TermSock(object):
 
     def _connect(self):
         # must hold on to socket object so it doesn't get GC'd
+        # and closed, even though the only thing we care about
+        # is its fileno()
         self.s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         while True:
             try:
                 self.s.connect(self.sock_name)
             except socket.error:
-                time.sleep(1)
+                time.sleep(0.1)
             else:
                 break
-    
+
         self.s_fd = self.s.fileno()
 
     def _poll(self):
@@ -38,7 +40,7 @@ class TermSock(object):
         """
         r,w,e = select.select([TermSock.STDIN_FD,
                                self.s_fd],
-                              [TermSock.STDOUT_FD, 
+                              [TermSock.STDOUT_FD,
                                TermSock.STDERR_FD,
                                self.s_fd],
                               [])

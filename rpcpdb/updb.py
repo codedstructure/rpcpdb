@@ -30,7 +30,7 @@ class UPdb(pdb.Pdb):
         target_frame = sys._getframe().f_back
         for count in range(self._level):
             try:
-            	target_frame = target_frame.f_back
+                target_frame = target_frame.f_back
             except AttributeError:
                 break
         self.set_trace(target_frame)
@@ -43,10 +43,21 @@ class UPdb(pdb.Pdb):
         os.remove(self._sock_path)
         os.rmdir(os.path.dirname(self._sock_path))
 
+
 class UPdb_mixin(object):
+    """
+    This is designed to be mixed-in to an RPC server
+    object. It allows an RPC client to register a
+    RPC method as being debuggable.
+
+    On triggering,
+    """
     _updb_debug_func = {}
 
     def debug_func(self, f, once=True, force=True):
+        """
+        @return: path to debug socket
+        """
         if f not in self._updb_debug_func:
             func = getattr(self, f)
             self._updb_debug_func[f] = func
@@ -60,5 +71,8 @@ class UPdb_mixin(object):
             return pdb_sock_path
 
     def undebug_func(self, f):
+        """
+        don't debug this function anymore.
+        """
         if f in self._updb_debug_func:
             setattr(self, f, self._updb_debug_func.pop(f))
