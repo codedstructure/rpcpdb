@@ -11,13 +11,13 @@ class TermSock(object):
 
     STDIN_FD = sys.stdin.fileno()    # normally 0
     STDOUT_FD = sys.stdout.fileno()  # normally 1
-    STDERR_FD = sys.stderr.fileno()  # normally 2
 
     def __init__(self, sock_name):
         self.sock_name = sock_name
         self.stdin_log = []
         self.stdout_log = []
         self.sock_log = []
+        self._out_fds = set()
 
     def _connect(self):
         # must hold on to socket object so it doesn't get GC'd
@@ -40,10 +40,9 @@ class TermSock(object):
         """
         r,w,e = select.select([TermSock.STDIN_FD,
                                self.s_fd],
-                              [TermSock.STDOUT_FD,
-                               TermSock.STDERR_FD,
-                               self.s_fd],
+                              list(self._out_fds),
                               [])
+
         if e:
             return True
         if TermSock.STDIN_FD in r:
@@ -51,21 +50,31 @@ class TermSock(object):
             if not stdin_input:
                 return True
             self.stdin_log.append(stdin_input)
+            self._out_fds.add(self.s_fd)
         if self.s_fd in r:
             sock_input = os.read(self.s_fd, TermSock.PIPE_BUF)
             if not sock_input:
                 return True
             self.sock_log.append(sock_input)
+            self._out_fds.add(TermSock.STDOUT_FD)
         if TermSock.STDOUT_FD in w and self.sock_log:
             self.sock_log = ''.join(self.sock_log)
             wlen = os.write(TermSock.STDOUT_FD, ''.join(self.sock_log))
             remainder = self.sock_log[wlen:]
-            self.sock_log = [remainder] if remainder else []
+            if remainder:
+                self.sock_log = [remainder]
+            else:
+                self.sock_log = []
+                self._out_fds.remove(TermSock.STDOUT_FD)
         if self.s_fd in w and self.stdin_log:
             self.stdin_log = ''.join(self.stdin_log)
             wlen = os.write(self.s_fd, ''.join(self.stdin_log))
             remainder = self.stdin_log[wlen:]
-            self.stdin_log = [remainder] if remainder else []
+            if remainder:
+                self.stdin_log = [remainder]
+            else:
+                self.stdin_log = []
+                self._out_fds.remove(self.s_fd)
 
     def mainloop(self):
         self._connect()
