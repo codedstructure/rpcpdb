@@ -55,3 +55,6 @@ Changes
 -------
 0.1
  * first alpha release.
+0.1.1
+ * fix issue where select call in termsock was continually
+   finding writable FDs, causing 100% CPU usage
