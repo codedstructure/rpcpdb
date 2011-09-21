@@ -80,3 +80,15 @@ class TermSock(object):
         self._connect()
         while not self._poll():
             pass
+
+def main(args = None):
+    if args is None:
+        args = sys.argv[1:]
+    if args:
+        ts = TermSock(args[0])
+        ts.mainloop()
+    else:
+        print("Usage: %s [debug socket address]" % sys.argv[0])
+
+if __name__ == '__main__':
+    main()

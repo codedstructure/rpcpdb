@@ -2,6 +2,7 @@
 
 # be compatible with Python 2.5
 from __future__ import with_statement
+import inspect
 
 import pdb, socket, sys, os, tempfile
 
@@ -10,7 +11,7 @@ class UPdb(pdb.Pdb):
         if force:
             try:
                 os.remove(sock_path)
-            except:
+            except OSError:
                 pass
         self._sock_path = sock_path
         self._level = level
@@ -58,7 +59,7 @@ class UPdb_mixin(object):
     # (function, unix_socket_path) pairs.
     _updb_debug_func = {}
 
-    def debug_func(self, f, once=True, force=True):
+    def debug_func(self, f, once=True, force=True, match_criteria=None):
         """
         @param f: function name
         @param once: one-shot debug - undebug after first hit
@@ -71,10 +72,29 @@ class UPdb_mixin(object):
             func = getattr(self, f)
             pdb_sock_path = "%s/pdb_sock"%tempfile.mkdtemp(prefix='updb_')
             self._updb_debug_func[f] = (func, pdb_sock_path)
+            def arg_match(o, k):
+                """
+                TODO: currently this will require an exact match on
+                any varargs/keyword args list of the target function. FIX
+                """
+                if not match_criteria:
+                    # we always match if we have no match criteria
+                    return True
+                # getcallargs is only 2.7+
+                # see also ActiveState recipe 551779 or inspect.py code.
+                called_with = inspect.getcallargs(func, *o, **k)
+                for key, val in match_criteria.items():
+                    if key in called_with and called_with[key] == val:
+                        return True
+                return False
             def _(*o, **k):
-                if once:
-                    self.undebug_func(f)
-                with UPdb(pdb_sock_path, level=1, force=force):
+                if arg_match(o,k):
+                    if once:
+                        self.undebug_func(f)
+                    with UPdb(pdb_sock_path, level=1, force=force):
+                        return func(*o, **k)
+                else:
+                    # we're not debugging you, this time...
                     return func(*o, **k)
             setattr(self, f, _)
             return pdb_sock_path
