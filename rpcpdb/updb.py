@@ -94,10 +94,21 @@ class UPdb_mixin(object):
                     # we always match if we have no match criteria
                     return True
                 called_with = getcallargs(func, *o, **k)
+                # insert anything passed using **kwargs etc as if it were
+                # a standard named parameter (for the purposes of comparison)
+                fn_keyword_arg_name = getargspec(func)[2]  # keywords in 2.6+ named tuple
+                if fn_keyword_arg_name is not None:
+                    for kw_k,kw_v in called_with.get(fn_keyword_arg_name, {}).items():
+                        called_with[kw_k] = kw_v
+
                 match = True
+                # All things in match_criteria must have exact matches
+                # in called_with for us to match things.
                 for key, val in match_criteria.items():
-                    if key in called_with and called_with[key] != val:
+                    # note short-circuit logic here
+                    if key not in called_with or called_with[key] != val:
                         match = False
+
                 return match
             def _(*o, **k):
                 if arg_match(o,k):

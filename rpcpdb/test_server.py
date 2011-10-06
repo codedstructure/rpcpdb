@@ -1,4 +1,4 @@
-#!/usr/bin/python -u
+#!/usr/bin/python
 
 # This is a simple non-RPC test case which runs a loop
 # in a background thread and then inserts a debug hook
@@ -30,21 +30,42 @@ class PrimeServer(updb.UPdb_mixin):
                     return i
                 probe += 1
 
+    def test_func(self, **k):
+        if k.pop('thing', None) == 'hello':
+            print("Hiya")
+        else:
+            print("OK then.")
+
     def mainloop(self):
         p = 0
-        while p < 200:
+        while p < 150:
             p = self.next_prime(p)
             print(p)
             time.sleep(0.1)
 
 def main():
     ps = PrimeServer()
+    # test basic parameter criteria match
     t = threading.Thread(target = ps.mainloop)
-    t.daemon=True
+    t.daemon = True
     t.start()
     time.sleep(2)
     terminal(ps.debug_func('next_prime',
                            match_criteria={'p':97}))
+    t.join()
+
+    # test keyword criteria match
+    def _():
+        time.sleep(2)
+        ps.test_func()
+        time.sleep(2)
+        ps.test_func(thing='hello')
+    t = threading.Thread(target=_)
+    t.daemon = True
+    t.start()
+    terminal(ps.debug_func('test_func',
+                           match_criteria={'thing': 'hello'}))
+    time.sleep(1)
     t.join()
 
 if __name__ == '__main__':
