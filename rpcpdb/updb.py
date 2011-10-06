@@ -2,7 +2,11 @@
 
 # be compatible with Python 2.5
 from __future__ import with_statement
-import inspect
+
+try:
+    from inspect import getcallargs, getargspec
+except ImportError:
+    from rpcpdb.inspect_helper import getcallargs, getargspec
 
 import pdb, socket, sys, os, tempfile
 
@@ -22,9 +26,16 @@ class UPdb(pdb.Pdb):
         self._handle = self._conn.makefile('rw')
         self._old_stdin = sys.stdin
         self._old_stdout = sys.stdout
+        extra = {}
+        if 'nosigint' in getargspec(pdb.Pdb.__init__)[0]:
+            # Python3.2 for some reason sets a SIGINT handler
+            # when '(c)ontinue' is run (to allow resuming debugger with Ctrl-C),
+            # but that fails when run in non-main thread, so turn it off.
+            extra = {'nosigint': True}
         pdb.Pdb.__init__(self,
                          stdin=self._handle,
-                         stdout=self._handle)
+                         stdout=self._handle,
+                         **extra)
         sys.stdout = sys.stdin = self._handle
 
     def __enter__(self):
@@ -62,8 +73,10 @@ class UPdb_mixin(object):
     def debug_func(self, f, once=True, force=True, match_criteria=None):
         """
         @param f: function name
-        @param once: one-shot debug - undebug after first hit
-        @param force: override any existing unix socket
+        @param once: one-shot debug - undebug after first hit (default True)
+        @param force: override any existing unix socket (default True)
+        @param match_criteria: optional dictionary mapping parameter names
+            to values; checked prior to debug
         @return: path to debug socket
         """
         if f in self._updb_debug_func:
@@ -80,13 +93,12 @@ class UPdb_mixin(object):
                 if not match_criteria:
                     # we always match if we have no match criteria
                     return True
-                # getcallargs is only 2.7+
-                # see also ActiveState recipe 551779 or inspect.py code.
-                called_with = inspect.getcallargs(func, *o, **k)
+                called_with = getcallargs(func, *o, **k)
+                match = True
                 for key, val in match_criteria.items():
-                    if key in called_with and called_with[key] == val:
-                        return True
-                return False
+                    if key in called_with and called_with[key] != val:
+                        match = False
+                return match
             def _(*o, **k):
                 if arg_match(o,k):
                     if once:
