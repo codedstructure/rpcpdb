@@ -8,7 +8,12 @@ try:
 except ImportError:
     from rpcpdb.inspect_helper import getcallargs, getargspec
 
-import pdb, socket, sys, os, tempfile
+import pdb
+import socket
+import sys
+import os
+import tempfile
+
 
 class UPdb(pdb.Pdb):
     def __init__(self, sock_path, level=0, force=False):
@@ -19,7 +24,8 @@ class UPdb(pdb.Pdb):
                 pass
         self._sock_path = sock_path
         self._level = level
-        self._sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self._sock = socket.socket(socket.AF_UNIX,
+                                   socket.SOCK_STREAM)
         self._sock.bind(self._sock_path)
         self._sock.listen(1)
         self._conn = self._sock.accept()[0]
@@ -29,8 +35,9 @@ class UPdb(pdb.Pdb):
         extra = {}
         if 'nosigint' in getargspec(pdb.Pdb.__init__)[0]:
             # Python3.2 for some reason sets a SIGINT handler
-            # when '(c)ontinue' is run (to allow resuming debugger with Ctrl-C),
-            # but that fails when run in non-main thread, so turn it off.
+            # when '(c)ontinue' is run (to allow resuming debugger
+            # with Ctrl-C), but that fails when run in non-main thread,
+            # so turn it off.
             extra = {'nosigint': True}
         pdb.Pdb.__init__(self,
                          stdin=self._handle,
@@ -83,22 +90,22 @@ class UPdb_mixin(object):
             return self._updb_debug_func[f][1]
         else:
             func = getattr(self, f)
-            pdb_sock_path = "%s/pdb_sock"%tempfile.mkdtemp(prefix='updb_')
+            pdb_sock_path = "%s/pdb_sock" % tempfile.mkdtemp(prefix='updb_')
             self._updb_debug_func[f] = (func, pdb_sock_path)
+
             def arg_match(o, k):
-                """
-                TODO: currently this will require an exact match on
-                any varargs/keyword args list of the target function. FIX
-                """
+                # check whether function f is called with
+                # parameters matching the given match_criteria
                 if not match_criteria:
                     # we always match if we have no match criteria
                     return True
                 called_with = getcallargs(func, *o, **k)
                 # insert anything passed using **kwargs etc as if it were
                 # a standard named parameter (for the purposes of comparison)
-                fn_keyword_arg_name = getargspec(func)[2]  # keywords in 2.6+ named tuple
+                fn_keyword_arg_name = getargspec(func)[2]
                 if fn_keyword_arg_name is not None:
-                    for kw_k,kw_v in called_with.get(fn_keyword_arg_name, {}).items():
+                    for kw_k, kw_v in called_with.get(fn_keyword_arg_name,
+                                                      {}).items():
                         called_with[kw_k] = kw_v
 
                 match = True
@@ -110,8 +117,9 @@ class UPdb_mixin(object):
                         match = False
 
                 return match
+
             def _(*o, **k):
-                if arg_match(o,k):
+                if arg_match(o, k):
                     if once:
                         self.undebug_func(f)
                     with UPdb(pdb_sock_path, level=1, force=force):

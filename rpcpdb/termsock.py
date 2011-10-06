@@ -1,5 +1,10 @@
 
-import socket, sys, select, time, os
+import socket
+import sys
+import select
+import time
+import os
+
 
 # equivalent of 'socat - UNIX:/path/to/socket'
 class TermSock(object):
@@ -38,15 +43,16 @@ class TermSock(object):
         """
         @return: whether we are finished.
         """
-        r,w,e = select.select([TermSock.STDIN_FD,
-                               self.s_fd],
-                              list(self._out_fds),
-                              [])
+        r, w, e = select.select([TermSock.STDIN_FD,
+                                 self.s_fd],
+                                list(self._out_fds),
+                                [])
 
         if e:
             return True
         if TermSock.STDIN_FD in r:
-            stdin_input = os.read(TermSock.STDIN_FD, TermSock.PIPE_BUF).decode()
+            stdin_input = os.read(TermSock.STDIN_FD,
+                                  TermSock.PIPE_BUF).decode()
             if not stdin_input:
                 return True
             self.stdin_log.append(stdin_input)
@@ -59,7 +65,8 @@ class TermSock(object):
             self._out_fds.add(TermSock.STDOUT_FD)
         if TermSock.STDOUT_FD in w and self.sock_log:
             self.sock_log = ''.join(self.sock_log)
-            wlen = os.write(TermSock.STDOUT_FD, ''.join(self.sock_log).encode())
+            wlen = os.write(TermSock.STDOUT_FD,
+                            ''.join(self.sock_log).encode())
             remainder = self.sock_log[wlen:]
             if remainder:
                 self.sock_log = [remainder]
@@ -81,11 +88,13 @@ class TermSock(object):
         while not self._poll():
             pass
 
+
 def terminal(addr):
     ts = TermSock(addr)
     ts.mainloop()
 
-def main(args = None):
+
+def main(args=None):
     if args is None:
         args = sys.argv[1:]
     if args:

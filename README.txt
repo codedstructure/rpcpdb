@@ -30,6 +30,11 @@ which the clients are continually calling; the next client
 to call that function will be remotely debuggable, while
 other clients carry on oblivious.
 
+An alternative example added in v0.2 is the 'test_server.py'
+which does not use RPC but runs functions in background threads.
+It gives a good overview of usage in a single module without
+extra dependencies.
+
 Currently the debug interface is provided via a UNIX socket,
 but this will be extended in future.
 
@@ -39,10 +44,13 @@ Pyro in the initial stages.
 Plans
 -----
 
- * Add trigger criteria which check incoming arguments so the
-   user can ensure the right client triggers the breakpoint
  * Update examples, tidy up, document.
  * Support other interfaces than termsock / UNIX socket.
+
+Done
+----
+ * v0.2 - Add trigger criteria which check incoming arguments so the
+   user can ensure the right client triggers the breakpoint
 
 License information
 -------------------
@@ -53,8 +61,11 @@ for usage, and a DISCLAIMER OF ALL WARRANTIES.
 
 Changes
 -------
-0.1
- * first alpha release.
+0.2
+ * Python 3 support (3.2+ only)
+ * parameter matching to trigger debugger (conditional debugging)
 0.1.1
  * fix issue where select call in termsock was continually
    finding writable FDs, causing 100% CPU usage
+0.1
+ * first alpha release.

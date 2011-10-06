@@ -5,10 +5,10 @@
 
 import threading
 import time
-from rpcpdb.termsock import terminal
-import updb
+from rpcpdb import terminal, UPdb_mixin
 
-class PrimeServer(updb.UPdb_mixin):
+
+class PrimeServer(UPdb_mixin):
     def next_prime(self, p):
         """
         Naive, flaky and slow way to get the next
