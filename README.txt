@@ -61,6 +61,11 @@ for usage, and a DISCLAIMER OF ALL WARRANTIES.
 
 Changes
 -------
+0.3.1
+ * add .hgignore file
+ * add updb creation without specifying a socket name. One will be
+   created 'at random' and the name available through the debug_socket
+   read-only property.
 0.3
  * Added ignore_count functionality for skipping a matched breakpoint
    n times
