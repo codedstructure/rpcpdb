@@ -7,4 +7,4 @@ p = 0
 while True:
     time.sleep(0.5)
     p = s.next_prime(p)
-    print p
+    print(p)

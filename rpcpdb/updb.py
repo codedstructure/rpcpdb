@@ -2,7 +2,12 @@
 
 # be compatible with Python 2.5
 from __future__ import with_statement
-import inspect
+
+try:
+    from inspect import getcallargs, getargspec
+except ImportError:
+    # more support for older (2.x) Python versions...
+    from rpcpdb.inspect_helper import getcallargs, getargspec  # NOQA
 
 import pdb
 import socket
@@ -20,16 +25,25 @@ class UPdb(pdb.Pdb):
                 pass
         self._sock_path = sock_path
         self._level = level
-        self._sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self._sock = socket.socket(socket.AF_UNIX,
+                                   socket.SOCK_STREAM)
         self._sock.bind(self._sock_path)
         self._sock.listen(1)
         self._conn = self._sock.accept()[0]
         self._handle = self._conn.makefile('rw')
         self._old_stdin = sys.stdin
         self._old_stdout = sys.stdout
+        extra = {}
+        if 'nosigint' in getargspec(pdb.Pdb.__init__)[0]:
+            # Python3.2 for some reason sets a SIGINT handler
+            # when '(c)ontinue' is run (to allow resuming debugger
+            # with Ctrl-C), but that fails when run in non-main thread,
+            # so turn it off.
+            extra = {'nosigint': True}
         pdb.Pdb.__init__(self,
                          stdin=self._handle,
-                         stdout=self._handle)
+                         stdout=self._handle,
+                         **extra)
         sys.stdout = sys.stdin = self._handle
 
     def __enter__(self):
@@ -82,20 +96,29 @@ class UPdb_mixin(object):
             self._updb_debug_func[f] = (func, pdb_sock_path)
 
             def arg_match(o, k):
-                """
-                TODO: currently this will require an exact match on
-                any varargs/keyword args list of the target function. FIX
-                """
+                # check whether function f is called with
+                # parameters matching the given match_criteria
                 if not match_criteria:
                     # we always match if we have no match criteria
                     return True
-                # getcallargs is only 2.7+
-                # see also ActiveState recipe 551779 or inspect.py code.
-                called_with = inspect.getcallargs(func, *o, **k)
+                called_with = getcallargs(func, *o, **k)
+                # insert anything passed using **kwargs etc as if it were
+                # a standard named parameter (for the purposes of comparison)
+                fn_keyword_arg_name = getargspec(func)[2]
+                if fn_keyword_arg_name is not None:
+                    for kw_k, kw_v in called_with.get(fn_keyword_arg_name,
+                                                      {}).items():
+                        called_with[kw_k] = kw_v
+
+                match = True
+                # All things in match_criteria must have exact matches
+                # in called_with for us to match things.
                 for key, val in match_criteria.items():
-                    if key in called_with and called_with[key] == val:
-                        return True
-                return False
+                    # note short-circuit logic here
+                    if key not in called_with or called_with[key] != val:
+                        match = False
+
+                return match
 
             def debug_check(*o, **k):
                 if arg_match(o, k):

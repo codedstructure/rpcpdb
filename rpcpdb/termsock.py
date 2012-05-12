@@ -1,5 +1,10 @@
 
-import socket, sys, select, time, os
+import socket
+import sys
+import select
+import time
+import os
+
 
 # equivalent of 'socat - UNIX:/path/to/socket'
 class TermSock(object):
@@ -38,28 +43,30 @@ class TermSock(object):
         """
         @return: whether we are finished.
         """
-        r,w,e = select.select([TermSock.STDIN_FD,
-                               self.s_fd],
-                              list(self._out_fds),
-                              [])
+        r, w, e = select.select([TermSock.STDIN_FD,
+                                 self.s_fd],
+                                list(self._out_fds),
+                                [])
 
         if e:
             return True
         if TermSock.STDIN_FD in r:
-            stdin_input = os.read(TermSock.STDIN_FD, TermSock.PIPE_BUF)
+            stdin_input = os.read(TermSock.STDIN_FD,
+                                  TermSock.PIPE_BUF).decode()
             if not stdin_input:
                 return True
             self.stdin_log.append(stdin_input)
             self._out_fds.add(self.s_fd)
         if self.s_fd in r:
-            sock_input = os.read(self.s_fd, TermSock.PIPE_BUF)
+            sock_input = os.read(self.s_fd, TermSock.PIPE_BUF).decode()
             if not sock_input:
                 return True
             self.sock_log.append(sock_input)
             self._out_fds.add(TermSock.STDOUT_FD)
         if TermSock.STDOUT_FD in w and self.sock_log:
             self.sock_log = ''.join(self.sock_log)
-            wlen = os.write(TermSock.STDOUT_FD, ''.join(self.sock_log))
+            wlen = os.write(TermSock.STDOUT_FD,
+                            ''.join(self.sock_log).encode())
             remainder = self.sock_log[wlen:]
             if remainder:
                 self.sock_log = [remainder]
@@ -68,7 +75,7 @@ class TermSock(object):
                 self._out_fds.remove(TermSock.STDOUT_FD)
         if self.s_fd in w and self.stdin_log:
             self.stdin_log = ''.join(self.stdin_log)
-            wlen = os.write(self.s_fd, ''.join(self.stdin_log))
+            wlen = os.write(self.s_fd, ''.join(self.stdin_log).encode())
             remainder = self.stdin_log[wlen:]
             if remainder:
                 self.stdin_log = [remainder]
@@ -81,12 +88,17 @@ class TermSock(object):
         while not self._poll():
             pass
 
-def main(args = None):
+
+def terminal(addr):
+    ts = TermSock(addr)
+    ts.mainloop()
+
+
+def main(args=None):
     if args is None:
         args = sys.argv[1:]
     if args:
-        ts = TermSock(args[0])
-        ts.mainloop()
+        terminal(args[0])
     else:
         print("Usage: %s [debug socket address]" % sys.argv[0])
 
