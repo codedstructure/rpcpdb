@@ -17,8 +17,14 @@ import tempfile
 
 
 class UPdb(pdb.Pdb):
-    def __init__(self, sock_path, level=0, force=False):
-        if force:
+    def __init__(self, sock_path=None, level=0, force=False):
+        if sock_path is None:
+            # create a random socket - this can be
+            # retrieved by self.debug_socket prior to
+            # entering a Pdb session
+            self._sock_path = os.path.join(tempfile.mkdtemp(),
+                                           str(os.getpid()))
+        elif force:
             try:
                 os.remove(sock_path)
             except OSError:
@@ -45,6 +51,11 @@ class UPdb(pdb.Pdb):
                          stdout=self._handle,
                          **extra)
         sys.stdout = sys.stdin = self._handle
+
+    @property
+    def debug_socket(self):
+        """read-only access to the debug socket path"""
+        return self._sock_path
 
     def __enter__(self):
         target_frame = sys._getframe().f_back
