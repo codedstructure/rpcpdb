@@ -43,15 +43,18 @@ class PrimeServer(UPdb_mixin):
             print(p)
             time.sleep(0.1)
 
+
 def main():
     ps = PrimeServer()
     # test basic parameter criteria match
-    t = threading.Thread(target = ps.mainloop)
+    t = threading.Thread(target=ps.mainloop)
     t.daemon = True
     t.start()
     time.sleep(2)
     terminal(ps.debug_func('next_prime',
-                           match_criteria={'p':97}))
+                           match_criteria={'p': 97}))
+    terminal(ps.debug_func('next_prime',
+                           ignore_count=5))
     t.join()
 
     # test keyword criteria match
@@ -63,6 +66,8 @@ def main():
     t = threading.Thread(target=_)
     t.daemon = True
     t.start()
+    terminal(ps.debug_func('test_func',
+                           match_criteria={'thing': 'hello'}))
     terminal(ps.debug_func('test_func',
                            match_criteria={'thing': 'hello'}))
     time.sleep(1)

@@ -122,12 +122,12 @@ class UPdb_mixin(object):
 
             def debug_check(*o, **k):
                 if arg_match(o, k):
-                    debug_check._ignore_count -= 1
                     if debug_check._ignore_count <= 0:
                         if once:
                             self.undebug_func(f)
                         with UPdb(pdb_sock_path, level=1, force=force):
                             return func(*o, **k)
+                    debug_check._ignore_count -= 1
                 # we're not debugging you, this time...
                 return func(*o, **k)
             # use a function attribute to store the skip count;
