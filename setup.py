@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name="rpcpdb",
-    version="0.3.1",
+    version="0.3.2",
     description="Debug support for RPC servers",
     long_description=open('README.txt').read(),
     author="Ben Bass",

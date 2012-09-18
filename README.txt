@@ -9,6 +9,8 @@ About
 -----
 rpcpdb is a wrapper around the Python pdb debugger which
 makes it more suitable for use in RPC contexts.
+It also provides a similar interface to a code.InteractiveConsole
+instance within the context of the target RPC process.
 
 It is designed to fulfil the need to debug a function on
 an already-running server which uses threads or processes
@@ -46,6 +48,7 @@ Plans
 
  * Update examples, tidy up, document.
  * Support other interfaces than termsock / UNIX socket.
+ * Support json-rpc
 
 Done
 ----
@@ -61,6 +64,9 @@ for usage, and a DISCLAIMER OF ALL WARRANTIES.
 
 Changes
 -------
+0.3.2
+ * add debug_interactive_console mixin function to gain an interactive
+   console into the target RPC API
 0.3.1
  * add .hgignore file
  * add updb creation without specifying a socket name. One will be

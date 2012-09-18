@@ -14,6 +14,8 @@ import socket
 import sys
 import os
 import tempfile
+import threading
+import code
 
 
 class UPdb(pdb.Pdb):
@@ -73,6 +75,39 @@ class UPdb(pdb.Pdb):
         self._conn.shutdown(socket.SHUT_RDWR)
         os.remove(self._sock_path)
         os.rmdir(os.path.dirname(self._sock_path))
+
+
+class DebugConsole(code.InteractiveConsole):
+
+    def __init__(self, socket_addr, *o, **k):
+        code.InteractiveConsole.__init__(self, *o, **k)
+        self.__sock_path = socket_addr
+        self.__sock = socket.socket(socket.AF_UNIX,
+                                    socket.SOCK_STREAM)
+        self.__sock.bind(self.__sock_path)
+        self.__sock.listen(1)
+        self.__conn = self.__sock.accept()[0]
+        self._debug_handle = self.__conn.makefile('rw')
+        #sys.stdout = self._debug_handle
+        #sys.stderr = self._debug_handle
+        #sys.stdin = self._debug_handle
+        sys.displayhook = self._displayhook
+
+    def _displayhook(self, obj):
+        if obj is None:
+            return
+        #__builtins__._ = None
+        self.write(repr(obj) + '\n')
+        #__builtins__._ = obj
+
+    def write(self, data):
+        if data:
+            self._debug_handle.write(data)
+            self._debug_handle.flush()
+
+    def raw_input(self, prompt=''):
+        self.write(prompt)
+        return self._debug_handle.readline()
 
 
 class UPdb_mixin(object):
@@ -154,3 +189,25 @@ class UPdb_mixin(object):
         """
         if f in self._updb_debug_func:
             setattr(self, f, self._updb_debug_func.pop(f)[0])
+
+    def debug_interactive_console(self):
+        """
+        start an interactive console in a new thread
+        return socket address to connect to it.
+        """
+        con_sock_path = "%s/con_sock" % tempfile.mkdtemp(prefix='updb_')
+        context = globals()
+        context['_debug_api'] = self
+
+        def run_console():
+            context['_debug_console'] = DebugConsole(con_sock_path, context)
+            try:
+                context['_debug_console'].interact()
+            finally:
+                os.remove(con_sock_path)
+                os.rmdir(os.path.dirname(con_sock_path))
+
+        t = threading.Thread(target=run_console)
+        t.daemon = True
+        t.start()
+        return con_sock_path
