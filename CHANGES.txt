@@ -1,0 +1,25 @@
+Changes
+-------
+0.3.3
+ * Command line interface to the debuggers
+0.3.2
+ * add debug_interactive_console mixin function to gain an interactive
+   console into the target RPC API
+0.3.1
+ * add .hgignore file
+ * add updb creation without specifying a socket name. One will be
+   created 'at random' and the name available through the debug_socket
+   read-only property.
+0.3
+ * Added ignore_count functionality for skipping a matched breakpoint
+   n times
+0.2.1
+ * No functional changes; updates to Trove classifiers only
+0.2
+ * Python 3 support (3.2+ only)
+ * parameter matching to trigger debugger (conditional debugging)
+0.1.1
+ * fix issue where select call in termsock was continually
+   finding writable FDs, causing 100% CPU usage
+0.1
+ * first alpha release.

@@ -1,9 +1,15 @@
 rpcpdb
 ======
 
-Copyright (c) 2010-2012 Ben Bass <benbass@codedstructure.net>
+A PDB wrapper designed to be part of RPC systems for remote
+introspection and debugging of RPC server state
 
-All rights reserved.
+Features
+--------
+ * debug any API function from the client side
+ * open an interactive console into the RPC process
+ * match and ignore count on function breakpoints
+ * Python 2 and 3 support
 
 About
 -----
@@ -50,38 +56,11 @@ Plans
  * Support other interfaces than termsock / UNIX socket.
  * Support json-rpc
 
-Done
-----
- * v0.2 - Add trigger criteria which check incoming arguments so the
-   user can ensure the right client triggers the breakpoint
-
 License information
 -------------------
 
+Copyright (c) 2010-2012 Ben Bass <benbass@codedstructure.net>
+All rights reserved.
+
 See the file "LICENSE" for information terms & conditions
 for usage, and a DISCLAIMER OF ALL WARRANTIES.
-
-
-Changes
--------
-0.3.2
- * add debug_interactive_console mixin function to gain an interactive
-   console into the target RPC API
-0.3.1
- * add .hgignore file
- * add updb creation without specifying a socket name. One will be
-   created 'at random' and the name available through the debug_socket
-   read-only property.
-0.3
- * Added ignore_count functionality for skipping a matched breakpoint
-   n times
-0.2.1
- * No functional changes; updates to Trove classifiers only
-0.2
- * Python 3 support (3.2+ only)
- * parameter matching to trigger debugger (conditional debugging)
-0.1.1
- * fix issue where select call in termsock was continually
-   finding writable FDs, causing 100% CPU usage
-0.1
- * first alpha release.
