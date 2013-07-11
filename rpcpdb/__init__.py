@@ -1,4 +1,4 @@
-__VERSION__ = "0.3.3"
+__VERSION__ = "0.3.4"
 
 # pull a few useful things into our namespace
 from rpcpdb.updb import UPdb, UPdb_mixin

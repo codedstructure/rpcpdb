@@ -59,7 +59,7 @@ Plans
 License information
 -------------------
 
-Copyright (c) 2010-2012 Ben Bass <benbass@codedstructure.net>
+Copyright (c) 2010-2013 Ben Bass <benbass@codedstructure.net>
 All rights reserved.
 
 See the file "LICENSE" for information terms & conditions

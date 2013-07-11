@@ -1,5 +1,7 @@
 Changes
 -------
+0.3.4
+ * Fix issue with the --match argument to the CLI
 0.3.3
  * Command line interface to the debuggers
 0.3.2
