@@ -17,7 +17,7 @@ def debug(options):
         c = get_api_connection()
         match_criteria = {}
         for match in (options.match or []):
-            param, value = map(''.strip, match.split(':', 1))
+            param, value = [x.strip() for x in match.split(':', 1)]
             if not param and not value:
                 raise ValueError('invalid match definition "%s"' % match)
             try:
