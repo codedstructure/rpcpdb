@@ -1,6 +1,7 @@
 import Pyro.core
 import updb
 
+
 class PrimeServer(Pyro.core.ObjBase, updb.UPdb_mixin):
     def next_prime(self, p):
         """
@@ -22,6 +23,7 @@ class PrimeServer(Pyro.core.ObjBase, updb.UPdb_mixin):
                     # i is co-prime to integers up to p.
                     return i
                 probe += 1
+
 
 def main():
     Pyro.core.initServer()

@@ -4,10 +4,11 @@ from SimpleXMLRPCServer import SimpleXMLRPCServer
 from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
 from SocketServer import ThreadingMixIn
 
-import time
+
 # Restrict to a particular path.
 class RequestHandler(SimpleXMLRPCRequestHandler):
     rpc_paths = ('/RPC2',)
+
 
 # Threaded mix-in
 class ThreadedXMLRPCServer(ThreadingMixIn,
@@ -45,6 +46,7 @@ class RpcServer(object):
 
 if __debug__:
     import updb
+
     class DebuggableRpcServer(RpcServer, updb.UPdb_mixin):
         pass
 

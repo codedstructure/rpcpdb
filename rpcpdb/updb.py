@@ -1,8 +1,5 @@
 #!/usr/bin/python -u
 
-# be compatible with Python 2.5
-from __future__ import with_statement
-
 try:
     from inspect import getcallargs, getargspec
 except ImportError:
