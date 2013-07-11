@@ -1,6 +1,8 @@
 #!/usr/bin/python -u
 
 import ast
+import signal
+
 from rpcpdb import termsock
 
 
@@ -34,6 +36,16 @@ def debug(options):
                                  force=options.force,
                                  match_criteria=match_criteria,
                                  ignore_count=options.ignore_count)
+
+        def _cleanup(*args):
+            # This undoes the breakpoint in the event we are
+            # rudely interrupted.
+            c.undebug_func(options.funcname)
+            raise SystemExit('Aborted.')
+
+        signal.signal(signal.SIGINT, _cleanup)
+        signal.signal(signal.SIGTERM, _cleanup)
+
     elif options.console:
         c = get_api_connection()
         sock_name = c.debug_interactive_console()
