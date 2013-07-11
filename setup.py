@@ -1,10 +1,13 @@
 #!/usr/bin/python
 
-from distutils.core import setup
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 
 setup(
     name="rpcpdb",
-    version="0.3.4",
+    version="0.3.5",
     description="Debug support for RPC servers",
     long_description=open('README.txt').read(),
     author="Ben Bass",
