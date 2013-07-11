@@ -1,9 +1,15 @@
 
 import socket
+import errno
 import sys
 import select
 import time
 import os
+
+PERM_ERR_MSG = """
+No permission to access {0}.
+
+Try using the '--sock {0}' option with sufficient access rights."""
 
 
 # equivalent of 'socat - UNIX:/path/to/socket'
@@ -32,7 +38,9 @@ class TermSock(object):
         while True:
             try:
                 self.s.connect(self.sock_name)
-            except socket.error:
+            except socket.error as exc:
+                if hasattr(exc, 'errno') and exc.errno == errno.EACCES:
+                    raise SystemExit(PERM_ERR_MSG.format(self.sock_name))
                 time.sleep(0.1)
             else:
                 break
