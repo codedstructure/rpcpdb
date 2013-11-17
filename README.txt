@@ -7,28 +7,28 @@ introspection and debugging of RPC server state
 Features
 --------
  * debug any API function from the client side
+ * store a trace file from any API function
  * open an interactive console into the RPC process
  * match and ignore count on function breakpoints
  * Python 2 and 3 support
 
 About
 -----
-rpcpdb is a wrapper around the Python pdb debugger which
-makes it more suitable for use in RPC contexts.
-It also provides a similar interface to a code.InteractiveConsole
-instance within the context of the target RPC process.
+rpcpdb supports three main functions to support debugging of RPC contexts:
+ * a wrapper around the pdb debugger with stdio routed over a UNIX socket
+ * tracing of API functions
+ * an interactive console available within the target RPC process
 
 It is designed to fulfil the need to debug a function on
 an already-running server which uses threads or processes
 to dispatch each remote procedure call, without having to
 change the source code to the server in any way. There is
 no disruption to other clients and rpc calls while the
-selected call is being debugged.
+selected call is being debugged or traced.
 
-In particular, a mixin class is provided which adds the
-`debug_func` and `undebug_func` methods to your RPC server.
-These allow breakpoints to be controlled by another RPC
-client.
+In particular, a mixin class is provided which adds a small number of
+debug and trace methods to your RPC server.
+These allow breakpoints to be controlled by another RPC client.
 
 For an example, run the xmlrpc_server.py server process,
 then run one or more xmlrpc_client.py processes which will
@@ -55,6 +55,7 @@ Plans
  * Update examples, tidy up, document.
  * Support other interfaces than termsock / UNIX socket.
  * Support json-rpc
+ * Improve API tracing functionality
 
 License information
 -------------------

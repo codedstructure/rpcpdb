@@ -7,7 +7,7 @@ except ImportError:
 
 setup(
     name="rpcpdb",
-    version="0.3.5",
+    version="0.4",
     description="Debug support for RPC servers",
     long_description=open('README.txt').read(),
     author="Ben Bass",

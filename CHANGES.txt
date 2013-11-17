@@ -1,5 +1,7 @@
 Changes
 -------
+0.4
+ * Added initial API function tracing functionality
 0.3.5
  * Clean up after interrupted debug cli session
 0.3.4

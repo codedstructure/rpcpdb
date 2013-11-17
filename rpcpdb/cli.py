@@ -1,5 +1,14 @@
 #!/usr/bin/python -u
 
+"""
+Command line interface to rpcpdb. This becomes an RPC client allowing
+RPC methods to be debugged & traced.
+
+Copyright 2010-2013 Ben Bass <ben.bass@codedstructure.net>
+Licence: MIT - http://www.opensource.org/licenses/mit-license.php
+"""
+
+import os
 import ast
 import signal
 
@@ -31,11 +40,19 @@ def debug(options):
                 # a NameError...
                 real_value = value
             match_criteria[param] = real_value
-        sock_name = c.debug_func(options.funcname,
-                                 options.once,
-                                 force=options.force,
-                                 match_criteria=match_criteria,
-                                 ignore_count=options.ignore_count)
+        if options.trace:
+            c.trace_func(options.funcname,
+                         options.trace_logfile,
+                         once=options.once,
+                         match_criteria=match_criteria,
+                         ignore_count=options.ignore_count)
+            sock_name = None
+        else:
+            sock_name = c.debug_func(options.funcname,
+                                     once=options.once,
+                                     force=options.force,
+                                     match_criteria=match_criteria,
+                                     ignore_count=options.ignore_count)
 
         def _cleanup(*args):
             # This undoes the breakpoint in the event we are
@@ -52,8 +69,9 @@ def debug(options):
     else:
         sock_name = options.sockname
 
-    dbg = termsock.TermSock(sock_name)
-    dbg.mainloop()
+    if sock_name is not None:
+        dbg = termsock.TermSock(sock_name)
+        dbg.mainloop()
 
 
 def main():
@@ -88,13 +106,26 @@ def main():
                       dest="force",
                       action="store_true",
                       help="Force (overwrite any previous socket)")
+    parser.add_option("-t", "--trace",
+                      dest="trace",
+                      action="store_true",
+                      help="Trace (rather than debug) function call")
+    parser.add_option("-l", "--trace-logfile",
+                      dest="trace_logfile",
+                      default=os.path.abspath("trace.out"),
+                      help="Path to trace file to store")
     options, args = parser.parse_args()
     if len(filter(None, (options.sockname,
                          options.funcname,
                          options.console))) != 1:
         parser.error("Specify exactly one of --funcname, --sockname or --console")
-    if options.match and not options.funcname:
-        parser.error("--match can only be specified for --funcname")
+    if (any((options.match, options.ignore_count, options.trace)) and
+        not options.funcname):
+        parser.error("options requiring --funcname given")
+    if options.trace_logfile and not options.trace:
+        parser.error("--trace-logfile can only be specified with --trace")
+    if options.force and options.trace:
+        parser.error("--force can not be specified with --trace")
 
     debug(options)
 
