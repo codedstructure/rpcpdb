@@ -6,6 +6,7 @@ Licence: MIT - http://www.opensource.org/licenses/mit-license.php
 """
 
 
+import os
 import sys
 import inspect
 
@@ -30,16 +31,30 @@ class LocalTracer(object):
         self.tracefile = tracefile
         self.fname = inspect.getframeinfo(frame).function
 
+        self.obj_source = None
+        self.line_offset = None
+        try:
+            self.obj_source, self.line_offset = inspect.getsourcelines(frame.f_code)
+        except IOError:
+            # source code unavailable
+            pass
+        else:
+            self.max_line_len = min(80, len(max(self.obj_source, key=len)))
+            self.fmt_str = "{}:{} ||| {:%d} ||| {}\n" % self.max_line_len
+            filename = frame.f_code.co_filename
+            # only keep last two elements of filename path
+            self.srcfile = os.path.sep.join(filename.split(os.path.sep)[-2:])
+
         if event == 'call':
             self.tracefile.write("=> {}\n".format(self.fname))
 
-        self.obj_source, self.line_offset = inspect.getsourcelines(frame.f_code)
-        self.max_line_len = min(80, len(max(self.obj_source, key=len)))
-        self.fmt_str = "{}:{} ||| {:%d} ||| {}\n" % self.max_line_len
-
     def __call__(self, frame, event, arg):
         if event == 'line':
-            fname = frame.f_code.co_filename
+            if self.obj_source is None:
+                self.tracefile.write("--\n")
+                # Could consider just setting a flag and not doing anything
+                # here so return is still tracked...
+                return None
             lineno = frame.f_lineno
             sourceline = self.obj_source[lineno - self.line_offset].rstrip()
             localvars = frame.f_locals.copy()
@@ -47,7 +62,7 @@ class LocalTracer(object):
             # useful & more cases where other things are just clutter, but...
             localvars.pop('self', None)
 
-            self.tracefile.write(self.fmt_str.format(fname, lineno,
+            self.tracefile.write(self.fmt_str.format(self.srcfile, lineno,
                                                      sourceline, localvars))
             return self
         elif event == 'return':
@@ -57,6 +72,7 @@ class LocalTracer(object):
 #
 # The following may be helpful if using this module standalone as an example.
 #
+
 
 def testfunc():
     i = 0
