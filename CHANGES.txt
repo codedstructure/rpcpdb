@@ -1,5 +1,7 @@
 Changes
 -------
+0.4.1
+ * Improvements to tracing functionality
 0.4
  * Added initial API function tracing functionality
 0.3.5
