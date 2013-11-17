@@ -4,7 +4,7 @@
 Command line interface to rpcpdb. This becomes an RPC client allowing
 RPC methods to be debugged & traced.
 
-Copyright 2010-2013 Ben Bass <ben.bass@codedstructure.net>
+Copyright 2010-2013 Ben Bass <benbass@codedstructure.net>
 Licence: MIT - http://www.opensource.org/licenses/mit-license.php
 """
 

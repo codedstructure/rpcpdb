@@ -5,7 +5,7 @@ updb.py - the core of rpcpdb.
 Contains mixin methods for RPC servers to support client-initiated
 function debugging & tracing
 
-Copyright 2010-2013 Ben Bass <ben.bass@codedstructure.net>
+Copyright 2010-2013 Ben Bass <benbass@codedstructure.net>
 Licence: MIT - http://www.opensource.org/licenses/mit-license.php
 """
 

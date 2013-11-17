@@ -1,7 +1,7 @@
 """
 Tracing of functions, writing trace files.
 
-Copyright 2013 Ben Bass <ben.bass@codedstructure.net>
+Copyright 2013 Ben Bass <benbass@codedstructure.net>
 Licence: MIT - http://www.opensource.org/licenses/mit-license.php
 """
 
