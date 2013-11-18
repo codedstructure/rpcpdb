@@ -9,7 +9,7 @@ setup(
     name="rpcpdb",
     version="0.4.1",
     description="Debug support for RPC servers",
-    long_description=open('README.txt').read(),
+    long_description=open('README.rst').read(),
     author="Ben Bass",
     author_email="benbass@codedstructure.net",
     url="http://bitbucket.org/codedstructure/rpcpdb",
